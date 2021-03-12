@@ -1,7 +1,7 @@
 //Parametros principales:
 
 const int    N = 100; //Cantidad de agentes.
-const double L = 2000; //Largo del sistema. Area = L*L.
+const double L = 2; //Largo del sistema. Area = L*L.
 
 
 //Parametros de evolución del sistema. 
