@@ -16,7 +16,6 @@ class particle{
 	private:
 		//Estado interno del agente.  
 		int state;
-
 	public:
 		//Estado dinámico del agente. 
 		double x,y;
@@ -76,15 +75,14 @@ particle create_particle(void){
 
 	//Tres distribuciones para asiganar la velocidad al azar:
 
-	//velocity=-active_velocity*log(1.- dis(gen)); //distribución exponencial
-	//velocity= pow( dis(gen)*( pow(v_max,1-k_powerl) - pow(v_min,1-k_powerl))+pow(v_min,1-k_powerl), 1./(1.-k_powerl)); //power_law
-	velocity=active_velocity;
+	//velocity = -active_velocity*log(1. - dis(gen)); //distribución exponencial
+	//velocity = pow( dis(gen)*( pow(v_max, 1- k_powerl) - pow(v_min,1-k_powerl))+pow(v_min,1-k_powerl), 1./(1.-k_powerl)); //power_law
+	velocity = active_velocity;
 
 	//Creación de la partícula:
 	particle A(x,y,velocity,angle);
 	
 	//Setting del estado interno de la partícula:
-
 	if   (dis(gen) < p_init){ A.set_infected();} //Agrega un porcentaje p_init de partículas infectadas.
 	else A.set_healthy();
 
@@ -130,7 +128,6 @@ double distance_x(particle A, particle B){
 
 		res = infinity;
 		x2  = B.x;
-
 		for(int i=-1; i<2; i++){
 			x1      = A.x + i*L; 
 			dx[i+1] = x1 - x2;
@@ -146,16 +143,14 @@ double distance_x(particle A, particle B){
 double distance_y(particle A, particle B){   
 		double y1, y2, res;
 		int j = 0;
-
 		vector<double> dy;
 		dy.resize(3,0);
 
 		res = infinity;
 		y2  = B.y;
-
 		for(int i=-1; i<2; i++){
 			y1      = A.y + i*L; 
-			dy[i+1] = y1-y2;
+			dy[i+1] = y1 - y2;
 
 			if (abs(dy[i+1]) < res ) {
 				res =  abs(dy[i+1]);

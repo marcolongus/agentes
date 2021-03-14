@@ -48,11 +48,9 @@ int main(void){
 	/*DECLARACIÓN DE VARIABLES*/
 	vector<particle> system    , 
 					 system_new;
-
-	vector<bool>     inter    ,  //Flag de interacción. 	
-					 inter_old;  //Flag de que la interacción terminó.
-
-	vector<int> state_vector;  //En cada lugar contiene la población de cada estado. 
+	vector<bool>     inter    ,   //Flag de interacción. 	
+					 inter_old;   //Flag de interacción terminada.
+	vector<int>      state_vector;//En cada lugar contiene la población de cada estado. 
 
 	/*Estuctura de datos para optimizar la búsqueda de interacciones entre agentes:
 		1. Utiliza un red-and-black tree implementado en c++ como set.
@@ -66,7 +64,6 @@ int main(void){
 	int num_boxes = floor(L);
 
 	//Inicializamos los vectores declarados previamente:
-
 	inter.resize(N,false);
 	inter_old.resize(N,false);
 
@@ -108,14 +105,12 @@ int main(void){
 	cout << "--------------------" << endl;
 	cout << "Experimento data:"    << endl;
 	cout << "--------------------" << endl;
-
 	cout << "Healthy, Infected, Refractary:" << endl;
 	for (auto element: state_vector) cout << element << endl;
 	cout << endl;
 	
 	//Reinicializar el vector.
 	state_vector = {0,0,0};
-	for (auto element: state_vector) cout << element << endl;
 
 	//Cerramos los archivos: 
 	FinalState.close();
