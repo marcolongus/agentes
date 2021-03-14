@@ -30,28 +30,25 @@ Red compleja:
 using namespace std;
 
 int main(void){
-
 	/*DEFINICIÓN DE ARCHIVOS DE SALIDA DEL PROGRAMA*/
 	//Para modelado de epidemias:
-	ofstream FinalState ("evolution.txt");
-	ofstream epidemic   ("epidemia.txt") ;//Estado de la epidemia en cada instante modulo m.
-	ofstream anim       ("animacion.txt");
-	ofstream imax       ("imax.txt")     ;//Máxima cantidad de infectados.
-	ofstream mips       ("mips.txt")     ;//Busqueda de mobility induced phase-separetion.
-
-
+	ofstream FinalState ("data/evolution.txt");
+	ofstream epidemic   ("data/epidemia.txt") ;//Estado de la epidemia en cada instante modulo m.
+	ofstream anim       ("data/animacion.txt");
+	ofstream imax       ("data/imax.txt")     ;//Máxima cantidad de infectados.
+	ofstream mips       ("data/mips.txt")     ;//Busqueda de mobility induced phase-separetion.
 	//Red compleja:
 	//Comentario sobre cómo está guardada esta información. 
-	ofstream topology   ("topology.txt") ; //Se guarda la red compleja. 
+	ofstream topology   ("data/topology.txt") ; //Se guarda la red compleja. 
 
 
 	/*DECLARACIÓN DE VARIABLES*/
 	vector<particle> system    , 
 					 system_new;
-	vector<bool>     inter    ,   //Flag de interacción. 	
-					 inter_old;   //Flag de interacción terminada.
-	vector<int>      state_vector;//En cada lugar contiene la población de cada estado. 
 
+	vector<bool>     inter;    //Flag de interacción. 	
+	vector<int>      state_vector; //En cada lugar contiene la población de cada estado. 
+ 
 	/*Estuctura de datos para optimizar la búsqueda de interacciones entre agentes:
 		1. Utiliza un red-and-black tree implementado en c++ como set.
 		2. Cada agente está indexado por un int que representa su posición en 
@@ -59,19 +56,18 @@ int main(void){
 		3. Se construye una grilla con cuadrículas de tamaño 1 y cada a una se le asigna un set.
 		4. Cada set contiene los agentes que están en cada cuadrícula.  
 	*/
-
 	vector<vector<set<int>>> box;
 	int num_boxes = floor(L);
 
 	//Inicializamos los vectores declarados previamente:
+	system_new.resize(N);
 	inter.resize(N,false);
-	inter_old.resize(N,false);
+	state_vector.resize(spin,0);
 
 	box.resize(num_boxes);
 	for (int i=0; i<box.size(); i++) box[i].resize(num_boxes);
 
-	state_vector.resize(spin,0);
-	
+		
 	/*CONDICIÓN INICIAL*/
 	for(int p = 0; p < N; p++){
 		particle Agent;       
@@ -100,6 +96,54 @@ int main(void){
 		anim << Agent.x <<" "<< Agent.y <<" "<< Agent.get_state() << endl;	
 	}//for N
 
+	cout << "Healthy, Infected, Refractary:" << endl;
+	for (auto element: state_vector) cout << element << endl;
+	cout << endl;
+	
+	/*EVOLUCIÓN DEL SISTEMA*/
+	int TimeStep = 0;
+
+	while (state_vector[1] > 0){
+		TimeStep +=1;
+		//if ( TimeStep/1000 == 1 ) cout << TimeStep << endl; 
+		state_vector = {0,0,0};
+		for (int p=0; p<N; p++){
+			vector<int> index;
+			index.push_back(p);
+			inter[p] = false;
+
+			/*chequeamos interacciones*/
+			forn(l,-2,3) forn(m,-2,3){
+				int i_index = b_condition(floor(system[p].x)+l),
+					j_index = b_condition(floor(system[p].y)+m);	
+				if(!box[i_index][j_index].empty()){
+					for(auto element: box[i_index][j_index]){
+						if (element !=p && interact(system[p],system[element])){
+							inter[p] = true;
+							index.push_back(element);
+						}
+					}//for
+				}//if not empty
+			} //for m, l
+			/*fin de chequeo de interacciones*/
+			system_new[p] = evolution(system, index, inter[p]);
+			state_vector[system_new[p].get_state()]++;
+		}//for p
+
+		/*Estabilzamos el set*/
+		for(int p=0; p<N; p++){
+			int i_new = floor(system_new[p].x),
+				j_new = floor(system_new[p].y);
+			int i_old = floor(system[p].x),
+				j_old = floor(system[p].y);
+			if (box[i_new][j_new].find(p) == box[i_new][j_new].end()){
+				box[i_old][j_old].erase(p);
+				box[i_new][j_new].insert(p);
+			}
+		}//cirra el for p set.
+		for (auto element: state_vector) cout << element << endl;
+		cout << endl;
+	}//while
 
 	/*ESCRITURA DE RESULTADOS*/
 	cout << "--------------------" << endl;
