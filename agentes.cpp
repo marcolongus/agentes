@@ -33,16 +33,16 @@ int main(void){
 
 	/*DEFINICIÓN DE ARCHIVOS DE SALIDA DEL PROGRAMA*/
 	//Para modelado de epidemias:
-	ofstream FinalState ("evolution.txt");
-	ofstream epidemic   ("epidemia.txt") ;//Estado de la epidemia en cada instante modulo m.
-	ofstream anim       ("animacion.txt");
-	ofstream imax       ("imax.txt")     ;//Máxima cantidad de infectados.
-	ofstream mips       ("mips.txt")     ;//Busqueda de mobility induced phase-separetion.
+	ofstream FinalState ("data/evolution.txt");
+	ofstream epidemic   ("data/epidemia.txt") ;//Estado de la epidemia en cada instante modulo m.
+	ofstream anim       ("data/animacion.txt");
+	ofstream imax       ("data/imax.txt")     ;//Máxima cantidad de infectados.
+	ofstream mips       ("data/mips.txt")     ;//Busqueda de mobility induced phase-separetion.
 
 
 	//Red compleja:
 	//Comentario sobre cómo está guardada esta información. 
-	ofstream topology   ("topology.txt") ; //Se guarda la red compleja. 
+	ofstream topology   ("data/topology.txt") ; //Se guarda la red compleja. 
 
 
 	/*DECLARACIÓN DE VARIABLES*/
@@ -50,7 +50,7 @@ int main(void){
 					 system_new;
 
 	vector<bool>     inter    ,  //Flag de interacción. 	
-					 inter_old;  //Flag de que la interacción terminó.
+					 inter_old;  //REVISAR SI HAY QUE SACAR!!!
 
 	vector<int> state_vector;  //En cada lugar contiene la población de cada estado. 
 
@@ -68,7 +68,7 @@ int main(void){
 	//Inicializamos los vectores declarados previamente:
 
 	inter.resize(N,false);
-	inter_old.resize(N,false);
+	inter_old.resize(N,false);  //revisar si hay que sacar
 
 	box.resize(num_boxes);
 	for (int i=0; i<box.size(); i++) box[i].resize(num_boxes);
@@ -103,6 +103,58 @@ int main(void){
 		anim << Agent.x <<" "<< Agent.y <<" "<< Agent.get_state() << endl;	
 	}//for N
 
+	cout << "Healthy, Infected, Refractary:" << endl;
+	for (auto element: state_vector) cout << element << endl;
+	cout << endl;
+
+	/*EVOLUCIÓN DEL SISTEMA*/
+	while (state_vector[1] > 0){
+		state_vector = {0,0,0};
+		for (int p=0; p<N; p++){
+
+			cout << p << endl;
+
+			vector<int> index;
+			index.push_back(p);
+			inter[p] = false;
+
+			/*chequeamos interacciones*/
+			forn(l,-2,3) forn(m,-2,3){
+				int i_index = b_condition(floor(system[p].x)+l),
+					j_index = b_condition(floor(system[p].y)+m);	
+				if(!box[i_index][j_index].empty()){
+					for(auto element: box[i_index][j_index]){
+						if (element !=p && interact(system[p],system[element])){
+							inter[p] = true;
+							index.push_back(element);
+						}
+					}//for
+				}//if not empty
+			} //for m, l
+
+			cout << p << endl;
+
+			/*fin de chequeo de interacciones*/
+			system_new[p] = evolution(system, index, inter[p]);
+			cout << "despues de evolutionar" << endl;
+			state_vector[system_new[p].get_state()]++;
+		}//for p
+
+		cout << "evolucion" << endl;
+
+		/*Estabilzamos el set*/
+		for(int p=0; p<N; p++){
+			int i_new = floor(system_new[p].x),
+				j_new = floor(system_new[p].y);
+			int i_old = floor(system[p].x),
+				j_old = floor(system[p].y);
+			if (box[i_new][j_new].find(p) == box[i_new][j_new].end()){
+				box[i_old][j_old].erase(p);
+				box[i_new][j_new].insert(p);
+			}
+		}//cirra el for p set.
+
+	}//while
 
 	/*ESCRITURA DE RESULTADOS*/
 	cout << "--------------------" << endl;
@@ -113,10 +165,6 @@ int main(void){
 	for (auto element: state_vector) cout << element << endl;
 	cout << endl;
 	
-	//Reinicializar el vector.
-	state_vector = {0,0,0};
-	for (auto element: state_vector) cout << element << endl;
-
 	//Cerramos los archivos: 
 	FinalState.close();
 	epidemic.close();
