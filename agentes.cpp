@@ -30,6 +30,7 @@ Red compleja:
 using namespace std;
 
 int main(void){
+	cout << "seed: " << seed << endl << endl; 
 	/*DEFINICIÓN DE ARCHIVOS DE SALIDA DEL PROGRAMA*/
 	//Para modelado de epidemias:
 	ofstream FinalState ("data/evolution.txt");
@@ -46,7 +47,7 @@ int main(void){
 	vector<particle> system    , 
 					 system_new;
 
-	vector<bool>     inter;    //Flag de interacción. 	
+	vector<bool>     inter;        //Flag de interacción. 	
 	vector<int>      state_vector; //En cada lugar contiene la población de cada estado. 
  
 	/*Estuctura de datos para optimizar la búsqueda de interacciones entre agentes:
@@ -60,7 +61,6 @@ int main(void){
 	int num_boxes = floor(L);
 
 	//Inicializamos los vectores declarados previamente:
-	system_new.resize(N);
 	inter.resize(N,false);
 	state_vector.resize(spin,0);
 
@@ -84,7 +84,7 @@ int main(void){
 						j = b_condition(j_index + m);
 					if (!box[i][j].empty()){
 						for (auto element: box[i][j]){
-							if (interact(Agent,system[element])) accepted = false;						
+							if (interact(Agent,system[element])) accepted = false; 						
 						}//for auto
 					}//if not empty
 				}//for m
@@ -93,25 +93,22 @@ int main(void){
 		}//while		
 		system.push_back(Agent);
 		state_vector[Agent.get_state()]++;
-		anim << Agent.x <<" "<< Agent.y <<" "<< Agent.get_state() << endl;	
-	}//for N
+	}//for N	
+	print_state(state_vector);
 
-	cout << "Healthy, Infected, Refractary:" << endl;
-	for (auto element: state_vector) cout << element << endl;
-	cout << endl;
-	
+
 	/*EVOLUCIÓN DEL SISTEMA*/
-	int TimeStep = 0;
-
+	int TimeStep   = 0; //Contador de tiempo.
+	system_new.resize(system.size());  
 	while (state_vector[1] > 0){
-		TimeStep +=1;
-		//if ( TimeStep/1000 == 1 ) cout << TimeStep << endl; 
+		TimeStep ++;
+		if (TimeStep % 10000 == 0) cout << "Tiempo: " << TimeStep*delta_time << endl; 
 		state_vector = {0,0,0};
+		#pragma omp parallel for
 		for (int p=0; p<N; p++){
 			vector<int> index;
 			index.push_back(p);
 			inter[p] = false;
-
 			/*chequeamos interacciones*/
 			forn(l,-2,3) forn(m,-2,3){
 				int i_index = b_condition(floor(system[p].x)+l),
@@ -129,33 +126,38 @@ int main(void){
 			system_new[p] = evolution(system, index, inter[p]);
 			state_vector[system_new[p].get_state()]++;
 		}//for p
-
+		//Animacion:
+		if (animation and TimeStep % anim_step == 0){
+			forn(p,0,system_new.size()){
+				anim << system_new[p].x           << " ";
+				anim << system_new[p].y           << " ";
+				anim << TimeStep*delta_time       << " ";
+				anim << system_new[p].get_state() << endl;
+			} 
+		}//if animacion		
 		/*Estabilzamos el set*/
 		for(int p=0; p<N; p++){
 			int i_new = floor(system_new[p].x),
 				j_new = floor(system_new[p].y);
 			int i_old = floor(system[p].x),
 				j_old = floor(system[p].y);
+
 			if (box[i_new][j_new].find(p) == box[i_new][j_new].end()){
 				box[i_old][j_old].erase(p);
 				box[i_new][j_new].insert(p);
-			}
+			}//if
 		}//cirra el for p set.
-		for (auto element: state_vector) cout << element << endl;
-		cout << endl;
+		system = system_new;
 	}//while
 
+
 	/*ESCRITURA DE RESULTADOS*/
+	cout << endl;
 	cout << "--------------------" << endl;
 	cout << "Experimento data:"    << endl;
 	cout << "--------------------" << endl;
-	cout << "Healthy, Infected, Refractary:" << endl;
-	for (auto element: state_vector) cout << element << endl;
-	cout << endl;
+	print_state(state_vector);
 	
-	//Reinicializar el vector.
-	state_vector = {0,0,0};
-
 	//Cerramos los archivos: 
 	FinalState.close();
 	epidemic.close();

@@ -2,7 +2,7 @@
 using namespace std; 
 
 //Generador de números aleatorios en (0,1).
-mt19937::result_type seed = time(0);
+mt19937::result_type seed = 1615996332;
 mt19937 gen(seed);                             //Standard mersenne_twister_engine seeded time(0)
 uniform_real_distribution<double> dis(0., 1.); // dis(gen), número aleatorio real entre 0 y 1. 
 
@@ -68,22 +68,24 @@ particle create_particle(void){
 	angle = dis(gen)*dos_Pi;
 
 	//Tres distribuciones para asiganar la velocidad al azar:
-
-	//velocity = -active_velocity*log(1. - dis(gen)); //distribución exponencial
-	//velocity = pow( dis(gen)*( pow(v_max, 1- k_powerl) - pow(v_min,1-k_powerl))+pow(v_min,1-k_powerl), 1./(1.-k_powerl)); //power_law
-	velocity = active_velocity;
-
+	switch(velocity_distribution){
+		case(0):
+			velocity = -active_velocity*log(1. - dis(gen));
+			break;
+		case(1):
+			velocity = pow( dis(gen)*( pow(v_max, 1- k_powerl) - pow(v_min,1-k_powerl))+pow(v_min,1-k_powerl), 1./(1.-k_powerl));
+			break;
+		default:
+			velocity = active_velocity;		
+	}
 	//Creación de la partícula:
 	particle A(x,y,velocity,angle);
-	
 	//Setting del estado interno de la partícula:
 	if   (dis(gen) < p_init){ A.set_infected();} //Agrega un porcentaje p_init de partículas infectadas.
 	else A.set_healthy();
-
 	//Agrega un pocentaje p_rinit de partículas en estado refractario.
 	//No reasigna una previamente infectada.  
 	if (dis(gen) < p_rinit and !A.is_infected() ){ A.set_refractary();}
-
 	return A;
 }
 
@@ -100,15 +102,15 @@ int my_mod(int a, int b){
 
 /*Distancia entre partículas*/
 double distance(particle A, particle B){
-	double x1, x2, y1, y2, res;
-	res = infinity;
-	x2  = B.x; y2 = B.y;
-	for(int i=-1; i<2; i++) for(int j=-1; j<2; j++){
-		x1 = A.x + i*L;
-		x2 = A.y + j*L;
-		res = min(res, pow(x1-x2,2) + pow(y1-y2,2));
-	}
-	return sqrt(res);
+        double x1,x2,y1,y2,res;
+        res = infinity;
+        x2 = B.x; y2 = B.y;
+        for(int i=-1;i<2;i++) for(int j=-1;j<2;j++){
+            x1 = A.x + i*L;
+            y1 = A.y + j*L;
+            res = min(res, pow((x1-x2),2) + pow((y1-y2),2));
+        }
+        return sqrt(res);
 }
 
 double distance_x(particle A, particle B){
@@ -157,7 +159,6 @@ double distance1(double dx, double dy){
 
 /* Interact */
 bool interact(particle A, particle B){
-
 	return (distance(A,B) < diameter);
 } //repensar esta función
 
@@ -195,7 +196,7 @@ particle evolution(vector<particle> &system, vector<int> &index, bool inter){
 	if (inter){
 		vector<double> k; 
 		k.resize(2);
-		k = campo(system,index);  //campo del sistema
+		k = campo(system, index);  //campo del sistema
 		Agent.x = b_condition(Agent.x + delta_time*k[0]);
 		Agent.y = b_condition(Agent.y + delta_time*k[1]);        
 	}//if
@@ -223,3 +224,13 @@ particle evolution(vector<particle> &system, vector<int> &index, bool inter){
     if (Agent.is_infected() && flag && (dis(gen) < p_infection) ) Agent.set_refractary();
     return Agent;      
 }
+
+
+/***************************************************************************************/
+
+void print_state(vector<int> state_vector){
+		cout << "Healthy   : " << state_vector[0] << endl;
+		cout << "Infected  : " << state_vector[1] << endl;
+		cout << "Refractary: " << state_vector[2] << endl << endl;
+}
+
