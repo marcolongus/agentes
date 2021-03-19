@@ -107,7 +107,6 @@ int main(void){
 			index.push_back(p);
 			inter[p] = false;
 			/*chequeamos interacciones*/
-			vector<vector<double>> distance_data;
 			forn(l,-2,3) forn(m,-2,3){
 				int i_index = b_condition(floor(system[p].x)+l),
 					j_index = b_condition(floor(system[p].y)+m);
