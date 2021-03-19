@@ -1,27 +1,25 @@
-/*
-Autor: Benjamín R. Marcolongo. FAMAF-UNC.
-
-Programa para evolucionar un sistema de N agentes en el tiempo.
-
-Agentes:
-		i. Las velocidades de los N agentes pueden ser uniformes o tomadas aleatoriamente. 
-			1. Las distribuciones por defecto son de tipo exponencial o de ley de potencias.  			
-		ii. Pueden interactuar a través de un potencial u otra forma (una red neuronal i.e).
-			1. El potencial por defecto es de esferas blandas.
-		ii.  Están confinados a un toroide topológico. 
-			1. El tamaño característico del toro se denota con L (lado del cuadrado). 
-		iii. Poseen un estado interno, caracterizado por un número entero.	 
-			1. Este estado puede o no interactaur con la dinámica espacial.
-		iV. El estado interno puede evolucionar en el tiempo.
-			1. Esta dinámica está regulada, genéricamente, con una distribución de poisson.  
-
-
-Red compleja:
-			i. El programa trackea todo el sistema de interacciones y guarda la red compleja resultante.
-			ii. La red compleja puede ser la asociada a la propagación del estado interno o la de contactos
-			para alguna escala temporal. 
-
-*/
+/* Autor: Benjamín R. Marcolongo. FAMAF-UNC.
+ *---------------------------------------------------------------------------------------------------------
+ * Programa para evolucionar un sistema de N agentes en el tiempo.
+ *---------------------------------------------------------------------------------------------------------
+ * Agentes:
+ *		i.   Las velocidades de los N agentes pueden ser uniformes o tomadas aleatoriamente. 
+ *			  1. Las distribuciones por defecto son de tipo exponencial o de ley de potencias.  			
+ *		ii.  Pueden interactuar a través de un potencial u otra forma (una red neuronal i.e).
+ *			  1. El potencial por defecto es de esferas blandas.
+ *		ii.  Están confinados a un toroide topológico. 
+ *			  1. El tamaño característico del toro se denota con L (lado del cuadrado). 
+ *		iii. Poseen un estado interno, caracterizado por un número entero.	 
+ *			  1. Este estado puede o no interactaur con la dinámica espacial.
+ *		iV.  El estado interno puede evolucionar en el tiempo.
+ *			  1. Esta dinámica está regulada, genéricamente, con una distribución de poisson.  
+ *---------------------------------------------------------------------------------------------------------
+ * Red compleja:
+ *			i.  El programa trackea todo el sistema de interacciones y guarda la red compleja resultante.
+ *			ii. La red compleja puede ser la asociada a la propagación del estado interno o la de contactos
+ *			para alguna escala temporal.
+ *--------------------------------------------------------------------------------------------------------- 
+ */
 #include <bits/stdc++.h>
 #include "classparticle.h" //Módulo con la clase definida para los agentes. 
 
@@ -30,6 +28,7 @@ Red compleja:
 using namespace std;
 
 int main(void){
+	int start_s = clock();
 	cout << "seed: " << seed << endl << endl; 
 	/*DEFINICIÓN DE ARCHIVOS DE SALIDA DEL PROGRAMA*/
 	//Para modelado de epidemias:
@@ -149,14 +148,15 @@ int main(void){
 		}//cirra el for p set.
 		system = system_new;
 	}//while
-
-
+	int stop_s = clock();
 	/*ESCRITURA DE RESULTADOS*/
 	cout << endl;
 	cout << "--------------------" << endl;
 	cout << "Experimento data:"    << endl;
 	cout << "--------------------" << endl;
 	print_state(state_vector);
+	cout << endl;
+	cout << "Time[min]: " << (((stop_s-start_s)/double(CLOCKS_PER_SEC)*1000)/1000)/60 << endl;
 	
 	//Cerramos los archivos: 
 	FinalState.close();
