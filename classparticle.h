@@ -7,7 +7,8 @@ mt19937 gen(seed);                             //Standard mersenne_twister_engin
 uniform_real_distribution<double> dis(0., 1.); // dis(gen), número aleatorio real entre 0 y 1.
 
 /*Definimos la clase partículas y sus métodos */
-/*texto sobre la clase*/
+/*Memoria que ocupa cada miembro de la clase: 4 doubbles (32 Bytes) + 1 int (4 Bytes) = 36 Bytes*/
+
 class particle{
 	private:
 		//Estado interno del agente.
@@ -57,9 +58,10 @@ particle::particle(double x1, double y1, double vel, double ang){
 
 /***************************************************************************************/
 
-/* Create a particle in tha random phase-state  */
-/* Falta agregar un string que elija la distribución para las velocidades.*/
-/*PONERLE AGENT EN VEZ DE A*/
+/**
+ * [Create a prticle in a random point (x, p, s) in the phase-state]
+ * @return  [particle]
+ */
 particle create_particle(void){
 	double x,y,velocity,angle;
 
@@ -100,7 +102,12 @@ int my_mod(int a, int b){
 	return ((a%b)+b)%b;
 }
 
-/*Distancia entre partículas*/
+/**
+ * [Distance between particles in a topological torus]
+ * @param  A [particle]
+ * @param  B [particle]
+ * @return   [double distance between A and B]
+ */
 double distance(particle A, particle B){
         double x1,x2,y1,y2,res;
         res = infinity;
@@ -113,6 +120,12 @@ double distance(particle A, particle B){
         return sqrt(res);
 }
 
+/**
+ * [distance_x difference between coordinates of two particles]
+ * @param  A [particle]
+ * @param  B [particle]
+ * @return   [double]
+ */
 double distance_x(particle A, particle B){
 		double x1, x2, res;
 		int j = 0;
@@ -133,6 +146,13 @@ double distance_x(particle A, particle B){
 		return dx[j+1];
 }
 
+
+/**
+ * [distance_y same as distance_x]
+ * @param  A [particle]
+ * @param  B [particle]
+ * @return   [double]
+ */
 double distance_y(particle A, particle B){
 		double y1, y2, res;
 		int j = 0;
