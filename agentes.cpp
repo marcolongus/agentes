@@ -46,6 +46,8 @@ int main(void){
 		gen.seed(seed);
 		cout << "----------------------------"   << endl;
 		cout << "Simulacion: " << n_simulaciones << endl;
+		cout << "----------------------------"   << endl;
+		cout << endl;
 		/*DECLARACIÓN DE VARIABLES*/
 		vector<particle> system    ,
 						 system_new;
