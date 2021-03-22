@@ -182,25 +182,42 @@ bool interact(particle A, particle B){
 	return (distance(A,B) < diameter);
 } //repensar esta función
 
+/**
+ * [interact_d interaccion que hace un pushback de memoria para la distancia]
+ * @param  A         [particula]
+ * @param  B         [paricula]
+ * @param  inter_dis [vector de memoria de distancias para pasar a evolution]
+ * @return           [bool verdadero si hay inter y falso si no]
+ */
+bool interact_d(particle A, particle B, vector<vector<double>> &inter_dis){
+	double dx = distance_x(A, B),
+		   dy = distance_y(A, B),
+	       d  = distance1(dx, dy);
+	vector<double> distance_info;
+	distance_info = {dx,dy,d};
+	if (d < diameter){
+		inter_dis.push_back(distance_info);
+		return true;
+	}
+	return false;
+}
+
 
 /*INTERACTION FUNCTIONS*/
 /* Evolution time step function of the particle */
 
 /***************************************************************************************/
 
-particle evolution(vector<particle> &system, vector<int> &index, bool inter){
+particle evolution(vector<particle> &system, vector<int> &index, bool inter, vector<vector<double>> inter_dis){
 	particle Agent = system[index[0]];
 	/* DINÁMICA ESPACIAL DEL SISTEMA*/
 	if (inter){
 		vector<double> field, potencial;
 		field.resize(2); potencial.resize(2,0); //inicia vector tamaño 2 en 0.
 
-		for(int i=1; i < index.size(); i++){
-			double dx_0i = distance_x(system[index[0]], system[index[i]]),
-				   dy_0i = distance_y(system[index[0]], system[index[i]]),
-				   d_0i  = distance1(dx_0i, dy_0i);
-			potencial[0] += pow(d_0i,-3)*dx_0i;
-			potencial[1] += pow(d_0i,-3)*dy_0i;
+		for(int i=0; i < inter_dis.size(); i++){
+			potencial[0] += pow(inter_dis[i][2],-3)*inter_dis[i][0];
+			potencial[1] += pow(inter_dis[i][2],-3)*inter_dis[i][1];
 
 		}//for
 	    for(int i=0; i<potencial.size(); i++) potencial[i] = gamma_friction*potencial[i];
