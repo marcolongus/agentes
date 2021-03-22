@@ -109,7 +109,6 @@ int main(void){
 			#pragma omp parallel for
 			for (int p=0; p<N; p++){
 				vector<int> index;
-				vector<vector<double>> inter_dis;
 				index.push_back(p);
 				inter[p] = false;
 				/*chequeamos interacciones*/
@@ -118,7 +117,7 @@ int main(void){
 						j_index = b_condition(floor(system[p].y)+m);
 					if(!box[i_index][j_index].empty()){
 						for(auto element: box[i_index][j_index]){
-							if (element !=p && interact_d(system[p], system[element], inter_dis)){
+							if (element !=p && interact(system[p],system[element])){
 								inter[p] = true;
 								index.push_back(element);
 							}
@@ -126,7 +125,7 @@ int main(void){
 					}//if not empty
 				} //for m, l
 				/*fin de chequeo de interacciones*/
-				system_new[p] = evolution(system, index, inter[p], inter_dis);
+				system_new[p] = evolution(system, index, inter[p]);
 				state_vector[system_new[p].get_state()]++;
 			}//for p
 			//Animacion:
